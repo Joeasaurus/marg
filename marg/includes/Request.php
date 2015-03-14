@@ -24,6 +24,7 @@ class Request {
   public $headers;
   public $uri;
   public $is_ajax;
+  public $request_body = array();
 
   public function __construct() {
     $this->verb = $_SERVER['REQUEST_METHOD'];
@@ -35,8 +36,10 @@ class Request {
     // parse the request for query params and request-content
     $this->parseIncomingParams();
 
-    $this->uri = '/' . $_GET['url'];
-    $this->url_elements = explode('/', $_GET['url']);
+    $tempURL = isset($_GET['url']) ? $_GET['url'] : '';
+
+    $this->uri = '/' . $tempURL;
+    $this->url_elements = explode('/', $tempURL);
   }
 
   // get URL element at a specific position
@@ -74,13 +77,15 @@ class Request {
 
     // parse request body
       $body = file_get_contents('php://input');
+      parse_str($body, $postvars);
+      foreach($postvars as $field => $value) {
+          $this->request_body[$field] = $value;
+      }
       $content_type = false;
 
       if(isset($_SERVER['CONTENT_TYPE'])) {
         $content_type = $_SERVER['CONTENT_TYPE'];
       }
-
-      $this->request_body = $body;
   }
 }
 
